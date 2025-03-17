@@ -15,12 +15,9 @@
 #
 import re
 
-from openai.lib.azure import AzureOpenAI
 from zhipuai import ZhipuAI
 from dashscope import Generation
 from abc import ABC
-from openai import OpenAI
-import openai
 from ollama import Client
 from rag.nlp import is_chinese, is_english
 from rag.utils import num_tokens_from_string
@@ -28,6 +25,9 @@ import os
 import json
 import requests
 import asyncio
+
+from langfuse.openai import openai
+from langfuse.openai import OpenAI, AzureOpenAI
 
 LENGTH_NOTIFICATION_CN = "······\n由于大模型的上下文窗口大小限制，回答已经被大模型截断。"
 LENGTH_NOTIFICATION_EN = "...\nThe answer is truncated by your chosen LLM due to its limitation on context length."
@@ -48,6 +48,7 @@ class Base(ABC):
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=history,
+                user_id=,
                 **gen_conf)
             if not response.choices:
                 return "", 0
