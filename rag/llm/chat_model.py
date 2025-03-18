@@ -34,10 +34,11 @@ LENGTH_NOTIFICATION_EN = "...\nThe answer is truncated by your chosen LLM due to
 
 
 class Base(ABC):
-    def __init__(self, key, model_name, base_url):
+    def __init__(self, key, model_name, base_url, tenant_id=""):
         timeout = int(os.environ.get('LM_TIMEOUT_SECONDS', 600))
         self.client = OpenAI(api_key=key, base_url=base_url, timeout=timeout)
         self.model_name = model_name
+        self.tenant_id = tenant_id
 
     def chat(self, system, history, gen_conf):
         if system:
@@ -48,7 +49,7 @@ class Base(ABC):
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=history,
-                user_id=,
+                user_id=self.tenant_id if hasattr(self, 'tenant_id') else "",
                 **gen_conf)
             if not response.choices:
                 return "", 0
@@ -73,6 +74,7 @@ class Base(ABC):
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=history,
+                user_id=self.tenant_id if hasattr(self, 'tenant_id') else "",
                 stream=True,
                 **gen_conf)
             for resp in response:
@@ -119,10 +121,10 @@ class Base(ABC):
 
 
 class GptTurbo(Base):
-    def __init__(self, key, model_name="gpt-3.5-turbo", base_url="https://api.openai.com/v1"):
+    def __init__(self, key, model_name="gpt-3.5-turbo", base_url="https://api.openai.com/v1", tenant_id=""):
         if not base_url:
             base_url = "https://api.openai.com/v1"
-        super().__init__(key, model_name, base_url)
+        super().__init__(key, model_name, base_url, tenant_id=tenant_id)
 
 
 class MoonshotChat(Base):
@@ -168,11 +170,12 @@ class DeepSeekChat(Base):
 
 
 class AzureChat(Base):
-    def __init__(self, key, model_name, **kwargs):
+    def __init__(self, key, model_name, tenant_id="", **kwargs):
         api_key = json.loads(key).get('api_key', '')
         api_version = json.loads(key).get('api_version', '2024-02-01')
         self.client = AzureOpenAI(api_key=api_key, azure_endpoint=kwargs["base_url"], api_version=api_version)
         self.model_name = model_name
+        self.tenant_id = tenant_id
 
 
 class BaiChuanChat(Base):

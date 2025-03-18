@@ -152,7 +152,8 @@ class TenantLLMService(CommonService):
             if model_config["llm_factory"] not in ChatModel:
                 return
             return ChatModel[model_config["llm_factory"]](
-                model_config["api_key"], model_config["llm_name"], base_url=model_config["api_base"])
+                model_config["api_key"], model_config["llm_name"], base_url=model_config["api_base"],
+                tenant_id=tenant_id)
 
         if llm_type == LLMType.SPEECH2TEXT:
             if model_config["llm_factory"] not in Seq2txtModel:
