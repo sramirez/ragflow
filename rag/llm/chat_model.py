@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import re
+import uuid
 
 from zhipuai import ZhipuAI
 from dashscope import Generation
@@ -39,6 +40,8 @@ class Base(ABC):
         self.client = OpenAI(api_key=key, base_url=base_url, timeout=timeout)
         self.model_name = model_name
         self.tenant_id = tenant_id
+        self.session_id = str(uuid.uuid4())
+
 
     def chat(self, system, history, gen_conf):
         if system:
@@ -50,6 +53,7 @@ class Base(ABC):
                 model=self.model_name,
                 messages=history,
                 user_id=self.tenant_id if hasattr(self, 'tenant_id') else "",
+                session_id=self.session_id if hasattr(self, 'session_id') else "",
                 **gen_conf)
             if not response.choices:
                 return "", 0
@@ -75,6 +79,7 @@ class Base(ABC):
                 model=self.model_name,
                 messages=history,
                 user_id=self.tenant_id if hasattr(self, 'tenant_id') else "",
+                session_id=self.session_id if hasattr(self, 'session_id') else "",
                 stream=True,
                 **gen_conf)
             for resp in response:
@@ -176,6 +181,7 @@ class AzureChat(Base):
         self.client = AzureOpenAI(api_key=api_key, azure_endpoint=kwargs["base_url"], api_version=api_version)
         self.model_name = model_name
         self.tenant_id = tenant_id
+        self.session_id = str(uuid.uuid4())
 
 
 class BaiChuanChat(Base):
